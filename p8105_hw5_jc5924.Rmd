@@ -28,5 +28,30 @@ scale_fill_discrete = scale_fill_viridis_d
 
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
-### Problem 2
+## Problem 2
+### Describe the data
+```{r}
+homicides=read_csv("./data/homicide-data.csv")
+```
+* In this homicides datafrmame, we have `r nrow(homicides)` of observations and `r ncol(homicides)` of variable that are `r names(homicides)`.
+
+### Create a city_state variable and summarize the unsolved cases
+```{r}
+homicides_summary=homicides %>% 
+  janitor::clean_names() %>% 
+  mutate(city_state=str_c(city,state,sep = ", "),
+         status=case_when(disposition=="Closed by arrest"~"solved",
+                          disposition=="Closed without arrest"~"unsolved",
+                          disposition=="Open/No arrest"~"unsolved")) %>% 
+  group_by(city_state) %>% 
+  summarize(homicides_number=n(),
+            unsolved=sum(status=="unsolved"))
+```
+### Proportion of unsolved homicides
+```{r}
+
+```
+
+
+
 
