@@ -57,6 +57,18 @@ baltimore=prop.test(homicides_summary %>% filter(city_state=="Baltimore, MD") %>
   broom::tidy() %>% 
   saveRDS(., "./data/baltimore_prop_test.rds")
 ```
+### Prop.test for each of the cities 
+```{r}
+cities=homicides_summary %>% 
+  mutate(prop_test=map2(.x=unsolved, .y=homicides_number, ~prop.test(x = .x, n = .y)),
+         tidy=map(.x = prop_test, ~ broom::tidy(.x))) %>% 
+  select(city_state,homicides_number,unsolved,tidy) %>% 
+  unnest(tidy) %>% 
+  select(city_state, estimate, conf.low, conf.high)
+cities
+```
+
+
 
 
 
