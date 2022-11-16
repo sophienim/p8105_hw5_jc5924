@@ -46,10 +46,16 @@ homicides_summary=homicides %>%
   group_by(city_state) %>% 
   summarize(homicides_number=n(),
             unsolved=sum(status=="unsolved"))
+homicides_summary
 ```
 ### Proportion of unsolved homicides
 ```{r}
-
+baltimore=prop.test(homicides_summary %>% filter(city_state=="Baltimore, MD") %>% 
+                      pull(unsolved),
+                    homicides_summary %>% filter(city_state=="Baltimore, MD") %>% 
+                      pull(homicides_number)) %>% 
+  broom::tidy() %>% 
+  saveRDS(., "./data/baltimore_prop_test.rds")
 ```
 
 
