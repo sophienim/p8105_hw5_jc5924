@@ -127,8 +127,32 @@ sim_mean %>%
 
 ### Plot showing the average estimate and the true mean
 ```{r}
-
+rejected_mean = 
+  sim_mean %>% 
+  filter(p.value < 0.05) %>% 
+  group_by(true_mean) %>% 
+  summarize(ave_mean = mean(estimate))
+rejected_mean
 ```
+
+```{r}
+sim_mean %>% 
+  group_by(true_mean) %>% 
+  summarize(ave_mean = mean(estimate)) %>% 
+  ggplot(aes(x = true_mean, y = ave_mean)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  geom_point(data = rejected_mean,
+            color = "red") + 
+  geom_smooth(data = rejected_mean, se = FALSE) +
+  labs(
+    x = "True Mean",
+    y = "Average Estimate of Mean",
+    title = " Average Estimate of All Sample"
+    )
+```
+* First, the average estimate of mean is approximately equal to the true mean for all samples. And the average estimate of mean is approximately equal to true mean only when true mean is larger. This also proves that the when size is large, the mean is a good estimator and while it is not a good approximation when effect size is small.
+
 
 
 
