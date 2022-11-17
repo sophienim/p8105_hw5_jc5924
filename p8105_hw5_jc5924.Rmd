@@ -97,35 +97,37 @@ dataframe %>%
 ```
 ### Repeat it for true mean
 ```{r}
-sim_mean=function(set){
-  dataframe=vector("list", 5000)
-  for (i in 1:5000) {
-    dataframe[[i]] = sim(mu = set)
-  }
-  power = 
-    dataframe %>% 
-    bind_rows() %>% 
-    janitor::clean_names() %>% 
-    select(estimate, p_value) %>% 
-    filter(p_value < 0.05) %>% 
-    summary()
-  power
-}
-test_power =
-  tibble(true_mean=c(0:6),
-         reject=map(true_mean, sim_mean)) %>%  
-  unnest(reject) %>% 
-  mutate(power=n/5000)
+sim_mean =
+  tibble(true_mean = c(0:6)) %>% 
+  mutate(
+    output = map(.x = true_mean, ~rerun(5000, sim(mu = .x))),
+    test= map(output, bind_rows)
+    ) %>% 
+  select(-output) %>% 
+  unnest()
+sim_mean
 ```
 ### Plot of the power and the true mean
 ```{r}
-plot_1=test_power %>% 
-  ggplot(aes(x=true_mean, y = power,color=true_mean)) +
-  geom_point()+
-  geom_line(alpha = 0.4) +
-  labs(x = "True Mean",
-       y="Power of the Test",
-       title="Plot of the power of the Test")
+sim_mean %>% 
+  group_by(true_mean) %>% 
+  summarize(total = n(),
+            rejected = sum(p.value < 0.05)) %>% 
+  mutate(power=rejected/total) %>% 
+  ggplot(aes(x =true_mean,y=power,color=true_mean)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  labs(
+    x = "True Mean ",
+    y = "Power of the test",
+    title = "Plot for Power of the Test over Means"
+    )
+```
+* According to the plot above, as true mean increases, the power of the test( proportion that null which was rejected) also increases. In another words, as the size increases, power of the test increases.
+
+### Plot showing the average estimate and the true mean
+```{r}
+
 ```
 
 
