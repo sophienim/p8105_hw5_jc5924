@@ -83,26 +83,49 @@ cities %>%
 ### Setup simulation with n=30, σ=5, t-test
 ```{r}
 sim=function(n=30,mu=0,sigma=5){
-     data=tibble(x=rnorm(n, mean=mu,sd = sigma)) 
-     test_statistic=t.test(data,mu=0,conf.int = 0.95)
-     data %>% 
-       summarize(
-           mu_hat=pull(broom::tidy(test_statistic), estimate),
-           p_value=pull(broom::tidy(test_statistic), p.value)
-    )
+     x=rnorm(n, mean=mu,sd = sigma)
+     t_statistic=t.test(x,mu=0,conf.int = 0.95) %>% 
+       broom::tidy()
+     t_statistic
 }
+dataframe=vector("list", 5000)
+for (i in 1:5000) {
+  dataframe[[i]] = sim()
+}
+dataframe %>% 
+  bind_rows()
 ```
-### Generate 5000 datasets
+### Repeat it for true mean
 ```{r}
-set.seed(1) 
-sim_result= 
-  tibble(mean= c(0:6)) %>% 
-  mutate(
-    output=map(.x=mean, ~rerun(5000, sim(mu = .x))),
-    estimate_df=map(output,bind_rows)
-    ) %>% 
-  select(-output) %>% 
-  unnest(estimate_df)
+sim_mean=function(set){
+  dataframe=vector("list", 5000)
+  for (i in 1:5000) {
+    dataframe[[i]] = sim(mu = set)
+  }
+  power = 
+    dataframe %>% 
+    bind_rows() %>% 
+    janitor::clean_names() %>% 
+    select(estimate, p_value) %>% 
+    filter(p_value < 0.05) %>% 
+    summary()
+  power
+}
+test_power =
+  tibble(true_mean=c(0:6),
+         reject=map(true_mean, sim_mean)) %>%  
+  unnest(reject) %>% 
+  mutate(power=n/5000)
+```
+### Plot of the power and the true mean
+```{r}
+plot_1=test_power %>% 
+  ggplot(aes(x=true_mean, y = power,color=true_mean)) +
+  geom_point()+
+  geom_line(alpha = 0.4) +
+  labs(x = "True Mean",
+       y="Power of the Test",
+       title="Plot of the power of the Test")
 ```
 
 
