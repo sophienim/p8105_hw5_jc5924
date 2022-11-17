@@ -67,6 +67,18 @@ cities=homicides_summary %>%
   select(city_state, estimate, conf.low, conf.high)
 cities
 ```
+### Plot shows estimates and CIs
+```{r}
+cities %>% 
+  mutate(city_state=fct_reorder(city_state,estimate)) %>% 
+  ggplot(aes(x=city_state,y=estimate))+
+  geom_point()+
+  geom_errorbar(aes(ymin=conf.low,ymax = conf.high))+
+  labs(x = "City, State",
+       y = "Estimate",
+       title = "Estimate Proportions and CIs for Unsolved Homicides Among Each of the Cities")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
 
 
 
