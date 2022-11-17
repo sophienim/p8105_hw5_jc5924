@@ -79,6 +79,33 @@ cities %>%
        title = "Estimate Proportions and CIs for Unsolved Homicides Among Each of the Cities")+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
+## Problem 3
+### Setup simulation with n=30, σ=5, t-test
+```{r}
+sim=function(n=30,mu=0,sigma=5){
+     data=tibble(x=rnorm(n, mean=mu,sd = sigma)) 
+     test_statistic=t.test(data,mu=0,conf.int = 0.95)
+     data %>% 
+       summarize(
+           mu_hat=pull(broom::tidy(test_statistic), estimate),
+           p_value=pull(broom::tidy(test_statistic), p.value)
+    )
+}
+```
+### Generate 5000 datasets
+```{r}
+set.seed(1) 
+sim_result= 
+  tibble(mean= c(0:6)) %>% 
+  mutate(
+    output=map(.x=mean, ~rerun(5000, sim(mu = .x))),
+    estimate_df=map(output,bind_rows)
+    ) %>% 
+  select(-output) %>% 
+  unnest(estimate_df)
+```
+
+
 
 
 
